@@ -1,37 +1,37 @@
 #!/usr/bin/python3
-'''A script that reads stdin line by line and computes metrics'''
-
-
+""" Reads metrics from stdin, computes an prints back to stdout """
 import sys
 
-codes = {'200': 0, '301': 0, '400': 0, '401': 0,
-         '403': 0, '404': 0, '405': 0, '500': 0}
-total_size = 0
-counter = 0
+
+def print_metrics(total, cache):
+    """ prints metric in specified format """
+    print(f"File size: {total}")
+    for code, count in cache.items():
+        if count:
+            print(f"{code}: {count}")
+
+
+codes = {"200": 0, "301": 0, "400": 0, "401": 0, "403": 0, "404": 0,
+         "405": 0, "500": 0}
+size = 0
+line_number = 0
 
 try:
     for line in sys.stdin:
-        tokens = line.split()
-        if len(tokens) > 4:
-            size = int(tokens[-1])
-            code = tokens[-2]
-            if code in codes.keys():
-                codes[code] += 1
-            total_size += size
-            counter += 1
+        tokens = line.split(" ")
+        if len(tokens) == 9:
+            file_size = int(tokens[-1])
+            status = tokens[-2]
+            if status in codes:
+                codes[status] += 1
+            line_number += 1
+            size += file_size
+        if line_number == 10:
+            print_metrics(size, codes)
+            line_number = 0
 
-        if counter == 10:
-            counter = 0
-            print(f'File size: {total_size}')
-            for key, value in codes.items():
-                if value != 0:
-                    print(f'{key}: {value}')
-
-except Exception as err:
+except Exception as error:
     pass
 
 finally:
-    print('File size: {total_size}')
-    for key, value in codes.items():
-        if value != 0:
-            print(f'{key}: {value}')
+    print_metrics(size, codes)
